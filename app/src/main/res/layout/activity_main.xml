@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:text="Ingrese el ID de un Ad activo para mostrarlo" />
+            android:text="@string/strng_text_header" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilAdId"
@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:digits="0123456789"
-                android:hint="Ingrese el ID del Ad"
+                android:hint="@string/strng_text_hint"
                 android:imeOptions="actionDone"
                 android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="16dp"
-            android:text="Mostrar Ad"
+            android:text="@string/strng_show_ad"
             app:cornerRadius="12dp" />
 
     </LinearLayout>
