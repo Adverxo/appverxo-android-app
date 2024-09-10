@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">AppVerxo</string>
-    <string name="strng_text_hint">Enter the Ad ID</string>
-    <string name="strng_show_ad">Show Ad</string>
-    <string name="strng_text_header">Enter the ID of an active Ad to display it</string>
+    <string name="text_helper_text">Ingrese el ID de un Ad activo para mostrarlo</string>
+    <string name="input_text">Ingrese el ID del Ad</string>
+    <string name="btn_text">Mostrar Ad</string>
+    <string name="btn_text_inflated">Mostrar Ad (inflado)</string>
+    <string name="toast_text">Ingresa un ID</string>
 </resources>

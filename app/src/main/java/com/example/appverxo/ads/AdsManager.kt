@@ -3,50 +3,54 @@ package com.example.appverxo.ads
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
-import com.tarkinstudios.appverxo_android_sdk.BuildConfig
-import com.tarkinstudios.appverxo_android_sdk.core.AdSdk
-import com.tarkinstudios.appverxo_android_sdk.data.model.AdUnit
-import com.tarkinstudios.appverxo_android_sdk.utils.AdOperationCallback
-import com.tarkinstudios.appverxo_android_sdk.utils.AdSdkInitializationListener
+import com.example.appverxo.BuildConfig
+import com.kimia.feed.sdk.core.AdSdk
+import com.kimia.feed.sdk.data.listeners.AdOperationCallback
+import com.kimia.feed.sdk.data.listeners.AdSdkInitializationListener
+import com.kimia.feed.sdk.data.model.AdUnit
+import com.kimia.feed.sdk.data.model.SdkOptions
 
 object AdsManager {
-    private var adSdkInstance: AdSdk? = null
+    private var adSdk: AdSdk? = null
     private val observers: MutableList<AdSdkInitializationObserver> = mutableListOf()
 
     fun initialize(context: Context) {
-        if (adSdkInstance == null) {
+        if (adSdk == null) {
             val apiKey = context.packageManager.getApplicationInfo(
                 context.packageName, PackageManager.GET_META_DATA
             ).metaData.getString("com.example.appverxo.API_KEY")
 
-            AdSdk.initialize(
-                mDebug = BuildConfig.DEBUG,
-                context = context,
-                apiKey = apiKey,
-                applicationId = "com.example.appverxo",
-                object : AdSdkInitializationListener, AdOperationCallback {
-                    override fun onInitialized(adUnits: List<AdUnit>) {
-                        adSdkInstance = AdSdk.getInstance()
-                        adUnits.forEach {
-                            Log.wtf("[AdsManager]", "-AD: ${it.id}")
-                            AdSdk.initAdUnit(it.id, context, this)
-                        }
-                        notifyObserversSdkInitialized()
-                    }
-                    override fun onInitializationFailed(errorMessage: String) {
-                        Log.wtf("[AdsManager]", "onInitializationFailed: $errorMessage")
-                    }
-
-                    override fun onFailure(error: String) {
-                        Log.wtf("[AdsManager]", "onFailure: $error")
-                    }
-
-                    override fun onSuccess(adUnit: String) {
-                        Log.wtf("[AdsManager]", "AdsManager: $adUnit")
-
-                    }
-                }
+            adSdk = AdSdk.getInstance(
+                SdkOptions(
+                    context = context,
+                    apiKey = apiKey!!,
+                    applicationId = "com.example.appverxo",
+                    debug = BuildConfig.DEBUG
+                )
             )
+            adSdk?.initialize(object : AdSdkInitializationListener, AdOperationCallback {
+                override fun onInitialized(adUnits: List<AdUnit>) {
+                    adUnits.forEach {
+                        Log.wtf("[AdsManager]", "-AD: ${it.id}")
+                        adSdk?.initAdUnit(it.id, this)
+                    }
+                    notifyObserversSdkInitialized()
+                }
+                override fun onInitializationFailed(errorMessage: String) {
+                    Log.wtf("[AdsManager]", "onInitializationFailed: $errorMessage")
+                }
+
+                override fun onFailure(error: String) {
+                    Log.wtf("[AdsManager]", "onFailure: $error")
+                }
+
+                override fun onSuccess(adUnit: String) {
+                    Log.wtf("[AdsManager]", "AdsManager: $adUnit")
+
+                }
+            })
+        } else {
+            Log.wtf("[AdsManager]", "AdsManager: already initialized")
         }
     }
 
@@ -55,11 +59,11 @@ object AdsManager {
     }
 
     private fun notifyObserversSdkInitialized() {
-        observers.forEach { it.onSdkInitialized() }
+        observers.forEach { it.onSdkInitialized(adSdk) }
     }
 }
 
 
 interface AdSdkInitializationObserver {
-    fun onSdkInitialized()
+    fun onSdkInitialized(adSdkInstance: AdSdk?)
 }
