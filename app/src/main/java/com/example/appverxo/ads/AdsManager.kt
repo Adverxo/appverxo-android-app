@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import com.example.appverxo.BuildConfig
+import com.example.appverxo.Singleton
 import com.kimia.feed.sdk.core.AdSdk
 import com.kimia.feed.sdk.data.listeners.AdOperationCallback
 import com.kimia.feed.sdk.data.listeners.AdSdkInitializationListener
@@ -32,6 +33,7 @@ object AdsManager {
                 override fun onInitialized(adUnits: List<AdUnit>) {
                     adUnits.forEach {
                         Log.wtf("[AdsManager]", "-AD: ${it.id}")
+                        Singleton.addAdUnit(it)
                         adSdk?.initAdUnit(it.id, this)
                     }
                     notifyObserversSdkInitialized()
@@ -45,8 +47,7 @@ object AdsManager {
                 }
 
                 override fun onSuccess(adUnit: String) {
-                    Log.wtf("[AdsManager]", "AdsManager: $adUnit")
-
+                    Log.wtf("[AdsManager]", "onSuccess: $adUnit")
                 }
             })
         } else {

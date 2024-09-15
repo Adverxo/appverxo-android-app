@@ -45,10 +45,19 @@ class MainActivity : AppCompatActivity(), AdSdkInitializationObserver {
             hideKeyboard()
 
             val adId = binding.etAdId.text.toString().toLong()
-            adSdkInstance?.show(
-                adId,
-                this@MainActivity,
-                object :
+
+            val adUnitList = Singleton.getAdUnits()
+            val adUnit = adUnitList.find { it.id == adId }
+            if (adUnit == null) {
+                Toast.makeText(this, "Ad unit not found", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (adUnit.inflated) {
+                val adView = AdView(this@MainActivity)
+                binding.adContainer.addView(adView)
+                adView.adUnitId = adUnit.id
+                adView.loadAd(object :
                     AdListener {
                     override fun onAdClicked() {
                         Log.wtf("[onAdClicked]", "onAdClicked: $adId")
@@ -58,56 +67,48 @@ class MainActivity : AppCompatActivity(), AdSdkInitializationObserver {
                         Log.wtf("[onAdClosed]", "onAdClosed: $adId")
                     }
 
+                    override fun onAdFailedToLoad(adError: String) {
+                        Log.wtf("[onAdFailedToLoad]", "onAdFailedToLoad: $adId")
+                    }
+
                     override fun onAdStarted() {
                         Log.wtf("[onAdStarted]", "onAdStarted: $adId")
                     }
+                })
+            } else {
+                adSdkInstance?.show(
+                    adId,
+                    this@MainActivity,
+                    object :
+                        AdListener {
+                        override fun onAdClicked() {
+                            Log.wtf("[onAdClicked]", "onAdClicked: $adId")
+                        }
 
-                    override fun onAdFailedToLoad(adError: String) {
-                        Log.wtf("[onAdFailedToLoad]", "onAdFailedToLoad: $adId")
-                        Toast.makeText(this@MainActivity, adError, Toast.LENGTH_SHORT).show()
-                    }
-                }) ?: run {
-                Toast.makeText(this, "AdSdk no inicializado", Toast.LENGTH_SHORT).show()
+                        override fun onAdClosed() {
+                            Log.wtf("[onAdClosed]", "onAdClosed: $adId")
+                        }
+
+                        override fun onAdStarted() {
+                            Log.wtf("[onAdStarted]", "onAdStarted: $adId")
+                        }
+
+                        override fun onAdFailedToLoad(adError: String) {
+                            Log.wtf("[onAdFailedToLoad]", "onAdFailedToLoad: $adId")
+                            Toast.makeText(this@MainActivity, adError, Toast.LENGTH_SHORT).show()
+                        }
+                    }) ?: run {
+                    Toast.makeText(this, "AdSdk no inicializado", Toast.LENGTH_SHORT).show()
+                }
             }
-        }
-
-
-        binding.btnShowInflatedAd.setOnClickListener {
-            if (binding.etAdId.text.toString().isEmpty()) {
-                Toast.makeText(this, getString(R.string.toast_text), Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            //hide keyboard
-            hideKeyboard()
-
-            val adId = binding.etAdId.text.toString().toLong()
-            val adView = AdView(this@MainActivity)
-            binding.adContainer.addView(adView)
-            adView.adUnitId = adId
-            adView.loadAd(object :
-                AdListener {
-                override fun onAdClicked() {
-                    Log.wtf("[onAdClicked]", "onAdClicked: $adId")
-                }
-
-                override fun onAdClosed() {
-                    Log.wtf("[onAdClosed]", "onAdClosed: $adId")
-                }
-
-                override fun onAdFailedToLoad(adError: String) {
-                    Log.wtf("[onAdFailedToLoad]", "onAdFailedToLoad: $adId")
-                }
-
-                override fun onAdStarted() {
-                    Log.wtf("[onAdStarted]", "onAdStarted: $adId")
-                }
-            })
         }
     }
 
     private fun hideKeyboard() {
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.etAdId.windowToken, 0)
+        binding.etAdId.post {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.etAdId.windowToken, 0)
+        }
     }
 
     override fun onSdkInitialized(adSdkInstance: AdSdk?) {
